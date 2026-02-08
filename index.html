@@ -54,20 +54,6 @@
     top:70%;
   }
 
-  /* Play music button */
-  #playBtn{
-    position:fixed;
-    top:18px;
-    right:18px;
-    padding:10px 14px;
-    border:none;
-    border-radius:999px;
-    font-size:14px;
-    cursor:pointer;
-    box-shadow:0 8px 18px rgba(0,0,0,0.25);
-    z-index: 10;
-  }
-
   .heart{
     position:absolute;
     color:red;
@@ -89,22 +75,20 @@
 
 <body>
 
-<!-- Background Music -->
+<!-- Background Music (hidden, starts on YES) -->
 <audio id="bgMusic" loop preload="auto">
   <source src="./perfect.mp3" type="audio/mpeg">
 </audio>
-
-<button id="playBtn">🔊 Play</button>
 
 <h1>Maya 💕</h1>
 
 <h2>
 Pyaru has a very important question for you… 🥺<br><br>
 
-Since the day we met on <b>October 25, 2022</b>,<br>
+Since the day we started talking on Nov 12, 2019 and met on <b>October 25, 2022</b>,<br>
 my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
 
-(You owe me one ‘see you at the airport’ moment — ETA: very soon ✈️💕)<br><br>
+(You still owe me one real-life hug — Whatsapp video call doesn’t count 😌❤️. Also, owe me one ‘see you at the airport’ moment — ETA: very soon ✈️💕)<br><br>
 
 <b>Will you be my Valentine?</b>
 </h2>
@@ -113,32 +97,9 @@ my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
 <button id="no" class="btn">NO 🙃</button>
 
 <script>
-  const noBtn   = document.getElementById("no");
-  const yesBtn  = document.getElementById("yes");
-  const music   = document.getElementById("bgMusic");
-  const playBtn = document.getElementById("playBtn");
-
-  async function startMusic(){
-    try{
-      music.currentTime = 20;   // ⭐ START FROM 20 SECONDS
-      music.volume = 0.6;
-      await music.play();
-      playBtn.textContent = "🎶 Playing";
-      setTimeout(() => playBtn.style.display = "none", 1200);
-    }catch(e){
-      alert("Tap 🔊 Play once more");
-      console.log("Music error:", e);
-    }
-  }
-
-  // Most reliable trigger
-  playBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    startMusic();
-  });
-
-  // Backup: first click anywhere
-  document.addEventListener("click", startMusic, { once: true });
+  const noBtn  = document.getElementById("no");
+  const yesBtn = document.getElementById("yes");
+  const music  = document.getElementById("bgMusic");
 
   // NO button runs away
   noBtn.addEventListener("mouseover", moveButton);
@@ -151,9 +112,15 @@ my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
     noBtn.style.top = y + "px";
   }
 
-  // YES button
-  yesBtn.addEventListener("click", () => {
-    startMusic();
+  // YES button: start music + show final message
+  yesBtn.addEventListener("click", async () => {
+    try{
+      music.currentTime = 20;   // 🎶 start from love part
+      music.volume = 0.6;
+      await music.play();
+    }catch(e){
+      console.log("Music play blocked once, but gesture was valid.", e);
+    }
     accepted();
   });
 
@@ -183,4 +150,3 @@ my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
 
 </body>
 </html>
-
