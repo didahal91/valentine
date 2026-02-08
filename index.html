@@ -1,191 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Maya ❤️</title>
 
 <style>
   body{
     background: linear-gradient(135deg,#ff758c,#ff7eb3);
-    height:100vh;
-    text-align:center;
-    font-family:"Segoe UI", Arial, Helvetica, sans-serif;
-    overflow:hidden;
+    min-height:100vh;
     margin:0;
+    font-family:"Segoe UI", Arial, Helvetica, sans-serif;
+    color:#fff;
+    overflow-x:hidden;
   }
 
-  #content{
-    position:relative;
-    z-index:2;
+  .wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+    text-align:center;
+  }
+
+  .card{
+    width:min(820px, 92vw);
   }
 
   h1{
-    margin-top:90px;
-    font-size:42px;
-    color:white;
-    text-shadow:2px 2px 8px #00000060;
+    font-size: clamp(34px, 5vw, 54px);
+    margin: 0 0 14px;
+    text-shadow:2px 2px 10px rgba(0,0,0,0.25);
   }
 
-  h2{
-    color:white;
-    margin: 30px 20px 60px;
-    position: relative;
-    z-index: 2;
-    line-height:1.6;
+  .msg{
+    font-size: clamp(16px, 2.2vw, 22px);
+    line-height:1.8;
+    margin: 0 auto 22px;
+    text-shadow: 1px 1px 6px rgba(0,0,0,0.18);
   }
 
-  .btn{
-    padding:16px 34px;
-    font-size:20px;
+  .small{
+    display:block;
+    font-size: clamp(14px, 2vw, 18px);
+    opacity:0.95;
+    margin-top:10px;
+  }
+
+  .question{
+    font-weight:800;
+    font-size: clamp(18px, 2.6vw, 26px);
+    margin-top:18px;
+  }
+
+  .buttons{
+    margin-top:18px;
+    display:flex;
+    gap:16px;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  button{
+    padding:14px 28px;
+    font-size:18px;
     border:none;
     border-radius:14px;
     cursor:pointer;
-    position:absolute;
-    transition:0.2s;
-    box-shadow:0 8px 18px rgba(0,0,0,0.25);
-    z-index: 3;
+    box-shadow:0 10px 22px rgba(0,0,0,0.25);
+    transition: transform 0.12s ease;
   }
 
-  #yes{ background:#ff2e63; color:white; left:35%; top:70%; }
-  #no{ background:#333; color:white; left:55%; top:70%; }
+  button:active{ transform: scale(0.98); }
+
+  #yes{
+    background:#ff2e63;
+    color:white;
+  }
+
+  #no{
+    background:#2f2f2f;
+    color:white;
+    position:relative; /* IMPORTANT: no absolute -> no overlap */
+  }
+
+  /* Small status badge top-right */
+  .status{
+    position:fixed;
+    top:14px;
+    right:14px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding:10px 12px;
+    border-radius:999px;
+    font-size:14px;
+    backdrop-filter: blur(6px);
+    user-select:none;
+  }
 
   .heart{
-    position:absolute;
+    position:fixed;
     color:red;
     font-size:26px;
     animation: float 5s linear infinite;
-    z-index: 1;
+    z-index:0;
+    pointer-events:none;
   }
 
   @keyframes float{
-    from{ transform:translateY(100vh); opacity:1; }
+    from{ transform:translateY(105vh); opacity:1; }
     to{ transform:translateY(-10vh); opacity:0; }
   }
 
-  @media (max-width: 600px) {
-    #yes{ left:25%; top:75%; }
-    #no{ left:55%; top:75%; }
-  }
-
-  /* Only appears if browser blocks audio */
-  #soundOverlay{
-    position:fixed;
-    inset:0;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    background:rgba(0,0,0,0.25);
-    z-index:999;
-  }
-  #soundOverlay button{
-    border:none;
-    border-radius:999px;
-    padding:14px 18px;
-    font-size:16px;
-    cursor:pointer;
-    box-shadow:0 8px 18px rgba(0,0,0,0.25);
-  }
+  .hidden{ display:none !important; }
 </style>
 </head>
 
 <body>
 
-<!-- Audio stays alive (never removed) -->
+<!-- Music -->
 <audio id="bgMusic" loop preload="auto">
-  <source src="./perfect.mp3" type="audio/mpeg">
+  <source src="perfect.mp3" type="audio/mpeg">
 </audio>
 
-<div id="soundOverlay">
-  <button id="enableSoundBtn">🔊 Tap to enable sound</button>
-</div>
+<div class="status" id="statusBadge">🔇 Music: OFF</div>
 
-<div id="content">
-  <h1>Maya 💕</h1>
+<div class="wrap">
+  <div class="card" id="content">
+    <h1>Maya 💕</h1>
 
-  <h2>
-    Pyaru has a very important question for you… 🥺<br><br>
-    Since the day we started talking on Nov 12, 2019 and met on <b>October 25, 2022</b>,<br>
-    my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
-    (You still owe me one real-life hug — Whatsapp video call doesn’t count 😌❤️.
-    Also, owe me one ‘see you at the airport’ moment — ETA: very soon ✈️💕)<br><br>
-    <b>Will you be my Valentine?</b>
-  </h2>
+    <p class="msg">
+      Pyaru has a very important question for you… 🥺<br><br>
 
-  <button id="yes" class="btn">YES 💖</button>
-  <button id="no" class="btn">NO 🙃</button>
+      Since the day we started talking on <b>Nov 12, 2019</b> and met on <b>Oct 25, 2022</b>,<br>
+      my life quietly upgraded from normal mode to happiness mode ❤️
+
+      <span class="small">
+        (You still owe me one real-life hug — WhatsApp video call doesn’t count 😌❤️)<br>
+        (And I’m still waiting for that “see you at the airport” moment — ETA: very soon ✈️💕)
+      </span>
+
+      <div class="question">Will you be my Valentine?</div>
+    </p>
+
+    <div class="buttons">
+      <button id="yes">YES 💖</button>
+      <button id="no">NO 🙃</button>
+    </div>
+  </div>
 </div>
 
 <script>
-  const noBtn   = document.getElementById("no");
-  const yesBtn  = document.getElementById("yes");
-  const music   = document.getElementById("bgMusic");
+  const music = document.getElementById("bgMusic");
+  const statusBadge = document.getElementById("statusBadge");
   const content = document.getElementById("content");
 
-  const overlay = document.getElementById("soundOverlay");
-  const enableSoundBtn = document.getElementById("enableSoundBtn");
+  const yesBtn = document.getElementById("yes");
+  const noBtn  = document.getElementById("no");
 
-  // Move NO away (desktop + mobile)
-  noBtn.addEventListener("mouseover", moveButton);
-  noBtn.addEventListener("click", moveButton);
-  noBtn.addEventListener("touchstart", moveButton);
+  // Keep a fixed list of "safe" positions for NO so it never overlaps text.
+  const noPositions = [
+    {x: -60, y: 0},
+    {x:  60, y: 0},
+    {x: -90, y: -10},
+    {x:  90, y: -10},
+    {x: -50, y: 20},
+    {x:  50, y: 20}
+  ];
+  let idx = 0;
 
-  function moveButton(){
-    const x = Math.random() * (window.innerWidth - 140);
-    const y = Math.random() * (window.innerHeight - 100);
-    noBtn.style.left = x + "px";
-    noBtn.style.top  = y + "px";
+  function moveNo(){
+    idx = (idx + 1) % noPositions.length;
+    const p = noPositions[idx];
+    noBtn.style.transform = `translate(${p.x}px, ${p.y}px)`;
   }
 
-  function startFrom20s(){
-    // Some browsers only allow seeking after metadata or after play starts
-    if (!isNaN(music.duration) && music.duration > 21) {
-      music.currentTime = 20;
-    }
+  noBtn.addEventListener("mouseover", moveNo);
+  noBtn.addEventListener("click", moveNo);
+  noBtn.addEventListener("touchstart", moveNo);
+
+  function setMusicOnUI(isOn){
+    statusBadge.textContent = isOn ? "🔊 Music: ON" : "🔇 Music: OFF";
   }
 
-  function tryPlayMusic(){
-    music.muted = false;
-    music.volume = 0.6;
+  // Bulletproof play: call play immediately inside click handler, no awaits first.
+  function playFrom20(){
+    music.volume = 0.7;
 
-    // Attempt to seek now; if not ready, we'll seek again on events below.
-    startFrom20s();
-
+    // Attempt to start
     const p = music.play();
+
+    // Seek to 20s after play starts / metadata available
+    const seek = () => {
+      if (!isNaN(music.duration) && music.duration > 21) {
+        try { music.currentTime = 20; } catch(e) {}
+      }
+    };
+
+    music.addEventListener("loadedmetadata", seek, { once:true });
+    music.addEventListener("playing", () => { seek(); setMusicOnUI(true); }, { once:true });
+
     if (p && typeof p.catch === "function") {
-      p.catch(() => {
-        // If blocked, show overlay that is definitely a valid gesture.
-        overlay.style.display = "flex";
+      p.catch((e) => {
+        console.log("Play blocked:", e);
+        setMusicOnUI(false);
+        alert("Your browser blocked sound. Click YES once more (or click anywhere then YES).");
       });
     }
   }
 
-  // If metadata loads later, seek then as well
-  music.addEventListener("loadedmetadata", startFrom20s);
-  // If playback starts, ensure we're at 20s
-  music.addEventListener("playing", startFrom20s);
-
-  // ✅ IMPORTANT: no async/await before play — keep gesture intact
   yesBtn.addEventListener("click", () => {
-    tryPlayMusic();
-    accepted();
-  });
-
-  // If browser blocked on YES, this button will always work
-  enableSoundBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    overlay.style.display = "none";
-    tryPlayMusic();
+    playFrom20();     // start music (gesture safe)
+    accepted();       // show message + hearts
   });
 
   function accepted(){
     content.innerHTML = `
-      <h1 style="margin-top:160px;color:white;line-height:1.6;">
-        YAAAY Maya!!! ❤️❤️❤️<br><br>
+      <h1 style="margin:0 0 12px; text-shadow:2px 2px 10px rgba(0,0,0,0.25);">YAAAY Maya!!! ❤️❤️❤️</h1>
+      <p class="msg" style="margin:0;">
         You just made Pyaru the happiest man alive 💍<br><br>
         Distance may separate us,<br>
         but my heart has always been right there with you 🌍❤️<br><br>
         I love you today, tomorrow, and forever 🌹
-      </h1>
+      </p>
     `;
     hearts();
   }
@@ -193,12 +232,12 @@
   function hearts(){
     setInterval(()=>{
       const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.innerHTML = "❤️";
-      heart.style.left = Math.random() * 100 + "vw";
+      heart.className="heart";
+      heart.innerHTML="❤️";
+      heart.style.left = Math.random()*100 + "vw";
       document.body.appendChild(heart);
       setTimeout(()=>heart.remove(), 5000);
-    }, 250);
+    }, 260);
   }
 </script>
 
