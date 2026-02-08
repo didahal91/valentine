@@ -43,22 +43,11 @@
     position:absolute;
     transition:0.2s;
     box-shadow:0 8px 18px rgba(0,0,0,0.25);
-    z-index: 3; /* keep buttons above everything */
+    z-index: 3;
   }
 
-  #yes{
-    background:#ff2e63;
-    color:white;
-    left:35%;
-    top:70%;
-  }
-
-  #no{
-    background:#333;
-    color:white;
-    left:55%;
-    top:70%;
-  }
+  #yes{ background:#ff2e63; color:white; left:35%; top:70%; }
+  #no{ background:#333; color:white; left:55%; top:70%; }
 
   .heart{
     position:absolute;
@@ -77,28 +66,48 @@
     #yes{ left:25%; top:75%; }
     #no{ left:55%; top:75%; }
   }
+
+  /* Only appears if browser blocks audio */
+  #soundOverlay{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0.25);
+    z-index:999;
+  }
+  #soundOverlay button{
+    border:none;
+    border-radius:999px;
+    padding:14px 18px;
+    font-size:16px;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(0,0,0,0.25);
+  }
 </style>
 </head>
 
 <body>
 
-<!-- Keep audio OUTSIDE content so it never gets removed -->
+<!-- Audio stays alive (never removed) -->
 <audio id="bgMusic" loop preload="auto">
   <source src="./perfect.mp3" type="audio/mpeg">
 </audio>
+
+<div id="soundOverlay">
+  <button id="enableSoundBtn">🔊 Tap to enable sound</button>
+</div>
 
 <div id="content">
   <h1>Maya 💕</h1>
 
   <h2>
     Pyaru has a very important question for you… 🥺<br><br>
-
     Since the day we started talking on Nov 12, 2019 and met on <b>October 25, 2022</b>,<br>
     my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
-
     (You still owe me one real-life hug — Whatsapp video call doesn’t count 😌❤️.
     Also, owe me one ‘see you at the airport’ moment — ETA: very soon ✈️💕)<br><br>
-
     <b>Will you be my Valentine?</b>
   </h2>
 
@@ -112,7 +121,10 @@
   const music   = document.getElementById("bgMusic");
   const content = document.getElementById("content");
 
-  // NO button runs away (desktop + mobile)
+  const overlay = document.getElementById("soundOverlay");
+  const enableSoundBtn = document.getElementById("enableSoundBtn");
+
+  // Move NO away (desktop + mobile)
   noBtn.addEventListener("mouseover", moveButton);
   noBtn.addEventListener("click", moveButton);
   noBtn.addEventListener("touchstart", moveButton);
@@ -124,32 +136,48 @@
     noBtn.style.top  = y + "px";
   }
 
-  // Make "start at 20s" reliable (wait for metadata)
-  function waitForMetadata(audioEl){
-    return new Promise((resolve) => {
-      if (audioEl.readyState >= 1) return resolve(); // HAVE_METADATA
-      audioEl.addEventListener("loadedmetadata", () => resolve(), { once: true });
-    });
+  function startFrom20s(){
+    // Some browsers only allow seeking after metadata or after play starts
+    if (!isNaN(music.duration) && music.duration > 21) {
+      music.currentTime = 20;
+    }
   }
 
-  yesBtn.addEventListener("click", async () => {
-    try{
-      await waitForMetadata(music);
-      music.currentTime = 20;   // start from 20s
-      music.volume = 0.6;
-      await music.play();
-      // set again after play (some browsers are picky)
-      music.currentTime = 20;
-    }catch(e){
-      console.log("Music play issue:", e);
-      // Even if music fails, continue the surprise
-    }
+  function tryPlayMusic(){
+    music.muted = false;
+    music.volume = 0.6;
 
+    // Attempt to seek now; if not ready, we'll seek again on events below.
+    startFrom20s();
+
+    const p = music.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        // If blocked, show overlay that is definitely a valid gesture.
+        overlay.style.display = "flex";
+      });
+    }
+  }
+
+  // If metadata loads later, seek then as well
+  music.addEventListener("loadedmetadata", startFrom20s);
+  // If playback starts, ensure we're at 20s
+  music.addEventListener("playing", startFrom20s);
+
+  // ✅ IMPORTANT: no async/await before play — keep gesture intact
+  yesBtn.addEventListener("click", () => {
+    tryPlayMusic();
     accepted();
   });
 
+  // If browser blocked on YES, this button will always work
+  enableSoundBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    overlay.style.display = "none";
+    tryPlayMusic();
+  });
+
   function accepted(){
-    // Replace ONLY the content area, NOT the entire body (keeps audio alive)
     content.innerHTML = `
       <h1 style="margin-top:160px;color:white;line-height:1.6;">
         YAAAY Maya!!! ❤️❤️❤️<br><br>
