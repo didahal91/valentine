@@ -72,7 +72,6 @@
         }
     }
 
-    /* Mobile fix */
     @media (max-width: 600px) {
         #yes{
             left:25%;
@@ -88,6 +87,11 @@
 </head>
 
 <body>
+
+<!-- Background Music -->
+<audio id="bgMusic" loop>
+    <source src="perfect.mp3" type="audio/mpeg">
+</audio>
 
 <h1>Maya 💕</h1>
 
@@ -107,6 +111,12 @@ my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
 
 <script>
 const noBtn = document.getElementById("no");
+const music = document.getElementById("bgMusic");
+
+// Start music on first interaction (Safari safe)
+document.addEventListener("click", () => {
+    music.play();
+}, { once: true });
 
 noBtn.addEventListener("mouseover", moveButton);
 noBtn.addEventListener("click", moveButton);
