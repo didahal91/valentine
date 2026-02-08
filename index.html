@@ -25,17 +25,18 @@
   }
 
   .card{
-    width:min(820px, 92vw);
+    width:min(860px, 92vw);
+    z-index:2;
   }
 
   h1{
-    font-size: clamp(34px, 5vw, 54px);
+    font-size: clamp(34px, 5vw, 56px);
     margin: 0 0 14px;
     text-shadow:2px 2px 10px rgba(0,0,0,0.25);
   }
 
   .msg{
-    font-size: clamp(16px, 2.2vw, 22px);
+    font-size: clamp(16px, 2.1vw, 22px);
     line-height:1.8;
     margin: 0 auto 22px;
     text-shadow: 1px 1px 6px rgba(0,0,0,0.18);
@@ -43,7 +44,7 @@
 
   .small{
     display:block;
-    font-size: clamp(14px, 2vw, 18px);
+    font-size: clamp(14px, 1.9vw, 18px);
     opacity:0.95;
     margin-top:10px;
   }
@@ -70,34 +71,93 @@
     border-radius:14px;
     cursor:pointer;
     box-shadow:0 10px 22px rgba(0,0,0,0.25);
-    transition: transform 0.12s ease;
+    transition: transform 0.12s ease, opacity 0.2s ease;
   }
 
   button:active{ transform: scale(0.98); }
 
-  #yes{
+  .btn-yes{
     background:#ff2e63;
     color:white;
   }
 
-  #no{
+  .btn-no{
     background:#2f2f2f;
     color:white;
-    position:relative; /* IMPORTANT: no absolute -> no overlap */
+    position:relative; /* NO overlap */
   }
 
-  /* Small status badge top-right */
-  .status{
+  /* Little tease text under buttons */
+  .tease{
+    margin-top:14px;
+    font-size:16px;
+    opacity:0.95;
+    min-height: 22px;
+  }
+
+  /* "Modal" overlay (Terms) */
+  .overlay{
     position:fixed;
-    top:14px;
-    right:14px;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0.35);
+    z-index:999;
+    padding: 18px;
+  }
+
+  .modal{
+    width:min(560px, 92vw);
     background: rgba(255,255,255,0.18);
-    border: 1px solid rgba(255,255,255,0.25);
-    padding:10px 12px;
-    border-radius:999px;
-    font-size:14px;
-    backdrop-filter: blur(6px);
-    user-select:none;
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 18px;
+    padding: 18px 18px 16px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.25);
+    text-align:left;
+  }
+
+  .modal h3{
+    margin: 0 0 10px;
+    font-size: 20px;
+  }
+
+  .modal ul{
+    margin: 10px 0 14px 20px;
+    line-height: 1.7;
+  }
+
+  .modal .actions{
+    display:flex;
+    gap:12px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    margin-top: 10px;
+  }
+
+  .btn-secondary{
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .btn-primary{
+    background:#ff2e63;
+    color:white;
+  }
+
+  /* Fake error screen */
+  .errorTitle{
+    font-size: clamp(34px, 5vw, 54px);
+    margin: 0 0 10px;
+    text-shadow:2px 2px 10px rgba(0,0,0,0.25);
+  }
+
+  .errorMsg{
+    font-size: clamp(16px, 2.1vw, 22px);
+    line-height:1.7;
+    opacity:0.95;
   }
 
   .heart{
@@ -120,19 +180,44 @@
 
 <body>
 
-<!-- Music -->
+<!-- Music file must exist in same repo root: perfect.mp3 -->
 <audio id="bgMusic" loop preload="auto">
   <source src="perfect.mp3" type="audio/mpeg">
 </audio>
 
-<div class="status" id="statusBadge">🔇 Music: OFF</div>
+<!-- TERMS overlay -->
+<div class="overlay" id="termsOverlay">
+  <div class="modal">
+    <h3>Terms &amp; Conditions 😌</h3>
+    <div>By clicking YES, you agree to:</div>
+    <ul>
+      <li>Unlimited teasing</li>
+      <li>Lifelong sarcasm</li>
+      <li>Being my forever Valentine ❤️</li>
+    </ul>
+    <div style="opacity:0.95;">Checkbox not required because… you already know you want this 😄</div>
+
+    <div class="actions">
+      <button class="btn-secondary" id="termsBackBtn">Go back 😅</button>
+      <button class="btn-primary" id="termsAcceptBtn">☑ I regret nothing</button>
+    </div>
+  </div>
+</div>
 
 <div class="wrap">
-  <div class="card" id="content">
+  <div class="card" id="screenError">
+    <div class="errorTitle">❌ ERROR 404</div>
+    <div class="errorMsg">
+      Valentine not found…<br><br>
+      Checking again… please don’t panic 😌
+    </div>
+  </div>
+
+  <div class="card hidden" id="screenMain">
     <h1>Maya 💕</h1>
 
     <p class="msg">
-      Your Kanchu has a very important question for you… 🥺<br><br>
+      Pyaru has a very important question for you… 🥺<br><br>
 
       Since the day we started talking on <b>Nov 12, 2019</b> and met on <b>Oct 25, 2022</b>,<br>
       my life quietly upgraded from normal mode to happiness mode ❤️
@@ -146,21 +231,44 @@
     </p>
 
     <div class="buttons">
-      <button id="yes">YES 💖</button>
-      <button id="no">NO 🙃</button>
+      <button id="yesBtn" class="btn-yes">YES 💖</button>
+      <button id="noBtn" class="btn-no">NO 🙃</button>
     </div>
+
+    <div class="tease" id="teaseLine"></div>
   </div>
+
+  <div class="card hidden" id="screenFinal"></div>
 </div>
 
 <script>
   const music = document.getElementById("bgMusic");
-  const statusBadge = document.getElementById("statusBadge");
-  const content = document.getElementById("content");
 
-  const yesBtn = document.getElementById("yes");
-  const noBtn  = document.getElementById("no");
+  const screenError = document.getElementById("screenError");
+  const screenMain  = document.getElementById("screenMain");
+  const screenFinal = document.getElementById("screenFinal");
 
-  // Keep a fixed list of "safe" positions for NO so it never overlaps text.
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn  = document.getElementById("noBtn");
+  const teaseLine = document.getElementById("teaseLine");
+
+  const termsOverlay  = document.getElementById("termsOverlay");
+  const termsBackBtn  = document.getElementById("termsBackBtn");
+  const termsAcceptBtn= document.getElementById("termsAcceptBtn");
+
+  // 1) Fake error -> main after 2 seconds
+  setTimeout(() => {
+    screenError.classList.add("hidden");
+    screenMain.classList.remove("hidden");
+    // Change message to "found"
+    // (Tiny flourish: show it briefly before switching)
+    screenError.innerHTML = `
+      <div class="errorTitle">✅ Valentine found.</div>
+      <div class="errorMsg">Panic cancelled. 😌❤️</div>
+    `;
+  }, 2000);
+
+  // 2) NO button moves around safely (never overlaps text)
   const noPositions = [
     {x: -60, y: 0},
     {x:  60, y: 0},
@@ -169,11 +277,11 @@
     {x: -50, y: 20},
     {x:  50, y: 20}
   ];
-  let idx = 0;
+  let noIdx = 0;
 
   function moveNo(){
-    idx = (idx + 1) % noPositions.length;
-    const p = noPositions[idx];
+    noIdx = (noIdx + 1) % noPositions.length;
+    const p = noPositions[noIdx];
     noBtn.style.transform = `translate(${p.x}px, ${p.y}px)`;
   }
 
@@ -181,50 +289,86 @@
   noBtn.addEventListener("click", moveNo);
   noBtn.addEventListener("touchstart", moveNo);
 
-  function setMusicOnUI(isOn){
-    statusBadge.textContent = isOn ? "🔊 Music: ON" : "🔇 Music: OFF";
+  // 3) YES runs away ONCE
+  let yesDodgedOnce = false;
+
+  function dodgeYesOnce(){
+    if (yesDodgedOnce) return false;
+    yesDodgedOnce = true;
+
+    teaseLine.textContent = "Relax… I just wanted to see if you were sure 😌";
+
+    // Move YES away temporarily (safe-ish)
+    yesBtn.style.transform = "translate(-90px, -12px) rotate(-2deg)";
+    setTimeout(() => {
+      yesBtn.style.transform = "none";
+    }, 650);
+
+    return true;
   }
 
-  // Bulletproof play: call play immediately inside click handler, no awaits first.
-  function playFrom20(){
+  // We'll trigger dodge on the first click attempt.
+  yesBtn.addEventListener("click", () => {
+    const dodged = dodgeYesOnce();
+    if (dodged) return; // stop here on first click
+
+    // Second click -> show terms
+    termsOverlay.style.display = "flex";
+  });
+
+  // Terms buttons
+  termsBackBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    termsOverlay.style.display = "none";
+    teaseLine.textContent = "Fine… take your time. I’m not nervous. 😌";
+  });
+
+  // Music start (reliable): only after she accepts terms (user gesture)
+  function startMusicFrom20(){
     music.volume = 0.7;
 
-    // Attempt to start
-    const p = music.play();
-
-    // Seek to 20s after play starts / metadata available
     const seek = () => {
       if (!isNaN(music.duration) && music.duration > 21) {
         try { music.currentTime = 20; } catch(e) {}
       }
     };
 
+    // Try play immediately in this click gesture
+    const p = music.play();
+
+    // Seek after metadata/playing to ensure it sticks
     music.addEventListener("loadedmetadata", seek, { once:true });
-    music.addEventListener("playing", () => { seek(); setMusicOnUI(true); }, { once:true });
+    music.addEventListener("playing", seek, { once:true });
 
     if (p && typeof p.catch === "function") {
       p.catch((e) => {
         console.log("Play blocked:", e);
-        setMusicOnUI(false);
-        alert("Your browser blocked sound. Click YES once more (or click anywhere then YES).");
+        // On some browsers, user may need one more click.
+        alert("Sound blocked. Tap the button once more 😅");
       });
     }
   }
 
-  yesBtn.addEventListener("click", () => {
-    playFrom20();     // start music (gesture safe)
-    accepted();       // show message + hearts
+  termsAcceptBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    termsOverlay.style.display = "none";
+    startMusicFrom20();
+    showFinal();
   });
 
-  function accepted(){
-    content.innerHTML = `
-      <h1 style="margin:0 0 12px; text-shadow:2px 2px 10px rgba(0,0,0,0.25);">YAAAY Maya!!! ❤️❤️❤️</h1>
+  function showFinal(){
+    screenMain.classList.add("hidden");
+    screenFinal.classList.remove("hidden");
+    screenFinal.innerHTML = `
+      <h1 style="margin:0 0 12px; text-shadow:2px 2px 10px rgba(0,0,0,0.25);">
+        YAAAY Maya!!! ❤️❤️❤️
+      </h1>
       <p class="msg" style="margin:0;">
         You just made Kanchu the happiest man alive 💍<br><br>
         Distance may separate us,<br>
         but my heart has always been right there with you 🌍❤️<br><br>
-        I love you today, tomorrow, and forever 🌹
-        until the moment I finally get to hold you again 🌹
+        I love you today, tomorrow, and forever —<br>
+        and until I get to hold you again soon 🌹
       </p>
     `;
     hearts();
@@ -244,5 +388,3 @@
 
 </body>
 </html>
-
-
