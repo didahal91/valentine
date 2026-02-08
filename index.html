@@ -14,6 +14,11 @@
     margin:0;
   }
 
+  #content{
+    position:relative;
+    z-index:2;
+  }
+
   h1{
     margin-top:90px;
     font-size:42px;
@@ -38,6 +43,7 @@
     position:absolute;
     transition:0.2s;
     box-shadow:0 8px 18px rgba(0,0,0,0.25);
+    z-index: 3; /* keep buttons above everything */
   }
 
   #yes{
@@ -59,6 +65,7 @@
     color:red;
     font-size:26px;
     animation: float 5s linear infinite;
+    z-index: 1;
   }
 
   @keyframes float{
@@ -75,76 +82,95 @@
 
 <body>
 
-<!-- Background Music (hidden, starts on YES) -->
+<!-- Keep audio OUTSIDE content so it never gets removed -->
 <audio id="bgMusic" loop preload="auto">
   <source src="./perfect.mp3" type="audio/mpeg">
 </audio>
 
-<h1>Maya 💕</h1>
+<div id="content">
+  <h1>Maya 💕</h1>
 
-<h2>
-Pyaru has a very important question for you… 🥺<br><br>
+  <h2>
+    Pyaru has a very important question for you… 🥺<br><br>
 
-Since the day we started talking on Nov 12, 2019 and met on <b>October 25, 2022</b>,<br>
-my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
+    Since the day we started talking on Nov 12, 2019 and met on <b>October 25, 2022</b>,<br>
+    my life quietly upgraded from normal mode to happiness mode ❤️<br><br>
 
-(You still owe me one real-life hug — Whatsapp video call doesn’t count 😌❤️. Also, owe me one ‘see you at the airport’ moment — ETA: very soon ✈️💕)<br><br>
+    (You still owe me one real-life hug — Whatsapp video call doesn’t count 😌❤️.
+    Also, owe me one ‘see you at the airport’ moment — ETA: very soon ✈️💕)<br><br>
 
-<b>Will you be my Valentine?</b>
-</h2>
+    <b>Will you be my Valentine?</b>
+  </h2>
 
-<button id="yes" class="btn">YES 💖</button>
-<button id="no" class="btn">NO 🙃</button>
+  <button id="yes" class="btn">YES 💖</button>
+  <button id="no" class="btn">NO 🙃</button>
+</div>
 
 <script>
-  const noBtn  = document.getElementById("no");
-  const yesBtn = document.getElementById("yes");
-  const music  = document.getElementById("bgMusic");
+  const noBtn   = document.getElementById("no");
+  const yesBtn  = document.getElementById("yes");
+  const music   = document.getElementById("bgMusic");
+  const content = document.getElementById("content");
 
-  // NO button runs away
+  // NO button runs away (desktop + mobile)
   noBtn.addEventListener("mouseover", moveButton);
   noBtn.addEventListener("click", moveButton);
+  noBtn.addEventListener("touchstart", moveButton);
 
   function moveButton(){
-    const x = Math.random() * (window.innerWidth - 120);
-    const y = Math.random() * (window.innerHeight - 80);
+    const x = Math.random() * (window.innerWidth - 140);
+    const y = Math.random() * (window.innerHeight - 100);
     noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
+    noBtn.style.top  = y + "px";
   }
 
-  // YES button: start music + show final message
+  // Make "start at 20s" reliable (wait for metadata)
+  function waitForMetadata(audioEl){
+    return new Promise((resolve) => {
+      if (audioEl.readyState >= 1) return resolve(); // HAVE_METADATA
+      audioEl.addEventListener("loadedmetadata", () => resolve(), { once: true });
+    });
+  }
+
   yesBtn.addEventListener("click", async () => {
     try{
-      music.currentTime = 20;   // 🎶 start from love part
+      await waitForMetadata(music);
+      music.currentTime = 20;   // start from 20s
       music.volume = 0.6;
       await music.play();
+      // set again after play (some browsers are picky)
+      music.currentTime = 20;
     }catch(e){
-      console.log("Music play blocked once, but gesture was valid.", e);
+      console.log("Music play issue:", e);
+      // Even if music fails, continue the surprise
     }
+
     accepted();
   });
 
   function accepted(){
-    document.body.innerHTML = `
+    // Replace ONLY the content area, NOT the entire body (keeps audio alive)
+    content.innerHTML = `
       <h1 style="margin-top:160px;color:white;line-height:1.6;">
-      YAAAY Maya!!! ❤️❤️❤️<br><br>
-      You just made Pyaru the happiest man alive 💍<br><br>
-      Distance may separate us,<br>
-      but my heart has always been right there with you 🌍❤️<br><br>
-      I love you today, tomorrow, and forever 🌹
-      </h1>`;
+        YAAAY Maya!!! ❤️❤️❤️<br><br>
+        You just made Pyaru the happiest man alive 💍<br><br>
+        Distance may separate us,<br>
+        but my heart has always been right there with you 🌍❤️<br><br>
+        I love you today, tomorrow, and forever 🌹
+      </h1>
+    `;
     hearts();
   }
 
   function hearts(){
     setInterval(()=>{
       const heart = document.createElement("div");
-      heart.className="heart";
-      heart.innerHTML="❤️";
-      heart.style.left=Math.random()*100+"vw";
+      heart.className = "heart";
+      heart.innerHTML = "❤️";
+      heart.style.left = Math.random() * 100 + "vw";
       document.body.appendChild(heart);
-      setTimeout(()=>heart.remove(),5000);
-    },250);
+      setTimeout(()=>heart.remove(), 5000);
+    }, 250);
   }
 </script>
 
