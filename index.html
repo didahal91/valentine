@@ -85,6 +85,7 @@
     background:#2f2f2f;
     color:white;
     position:relative; /* NO overlap */
+    user-select:none;
   }
 
   /* Little tease text under buttons */
@@ -174,6 +175,18 @@
     to{ transform:translateY(-10vh); opacity:0; }
   }
 
+  /* NEW: wiggle for NO */
+  @keyframes wiggle{
+    0%{ transform: translate(var(--tx,0px), var(--ty,0px)) rotate(0deg); }
+    25%{ transform: translate(var(--tx,0px), var(--ty,0px)) rotate(-2deg); }
+    50%{ transform: translate(var(--tx,0px), var(--ty,0px)) rotate(2deg); }
+    75%{ transform: translate(var(--tx,0px), var(--ty,0px)) rotate(-1deg); }
+    100%{ transform: translate(var(--tx,0px), var(--ty,0px)) rotate(0deg); }
+  }
+  .no-wiggle{
+    animation: wiggle 220ms ease-in-out;
+  }
+
   .hidden{ display:none !important; }
 </style>
 </head>
@@ -260,15 +273,16 @@
   setTimeout(() => {
     screenError.classList.add("hidden");
     screenMain.classList.remove("hidden");
-    // Change message to "found"
-    // (Tiny flourish: show it briefly before switching)
+
     screenError.innerHTML = `
       <div class="errorTitle">✅ Valentine found.</div>
       <div class="errorMsg">Panic cancelled. 😌❤️</div>
     `;
   }, 2000);
 
-  // 2) NO button moves around safely (never overlaps text)
+  // =========================
+  // ENHANCED "GASLIGHTING NO"
+  // =========================
   const noPositions = [
     {x: -60, y: 0},
     {x:  60, y: 0},
@@ -279,15 +293,70 @@
   ];
   let noIdx = 0;
 
-  function moveNo(){
-    noIdx = (noIdx + 1) % noPositions.length;
-    const p = noPositions[noIdx];
-    noBtn.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  let noAttempts = 0;
+  const noLines = [
+    "NO 🙃",
+    "Are you sure? 😐",
+    "Think again 😏",
+    "Wrong choice 😌",
+    "This button is broken 🔧",
+    "Nice try 😄",
+    "Not happening 😌",
+    "Go click YES 💖"
+  ];
+
+  function applyNoTransform(x, y){
+    // store values so wiggle animation can keep translate consistent
+    noBtn.style.setProperty("--tx", x + "px");
+    noBtn.style.setProperty("--ty", y + "px");
+    noBtn.style.transform = `translate(${x}px, ${y}px)`;
   }
 
-  noBtn.addEventListener("mouseover", moveNo);
-  noBtn.addEventListener("click", moveNo);
-  noBtn.addEventListener("touchstart", moveNo);
+  function wiggleNo(){
+    noBtn.classList.remove("no-wiggle");
+    // force reflow to restart animation reliably
+    void noBtn.offsetWidth;
+    noBtn.classList.add("no-wiggle");
+  }
+
+  function handleNoAttempt(source){
+    noAttempts++;
+
+    // Update NO button text (gaslight)
+    const idx = Math.min(noAttempts, noLines.length - 1);
+    noBtn.textContent = noLines[idx];
+
+    // Add a little teasing line sometimes
+    if (noAttempts === 1) teaseLine.textContent = "Ohh you found the NO button 😅";
+    if (noAttempts === 3) teaseLine.textContent = "Interesting choice… suspicious even 😏";
+    if (noAttempts === 5) teaseLine.textContent = "I’m starting to think you’re doing this for fun 😄";
+    if (noAttempts >= 7) teaseLine.textContent = "Okay okay… YES is that way 👉💖";
+
+    // Move it away after each attempt (still safe positions)
+    noIdx = (noIdx + 1) % noPositions.length;
+    const p = noPositions[noIdx];
+
+    // Make it “more scared” after a few attempts: double hop
+    applyNoTransform(p.x, p.y);
+    wiggleNo();
+
+    if (noAttempts >= 5) {
+      setTimeout(() => {
+        noIdx = (noIdx + 1) % noPositions.length;
+        const p2 = noPositions[noIdx];
+        applyNoTransform(p2.x, p2.y);
+      }, 110);
+    }
+  }
+
+  // Desktop hover = attempt
+  noBtn.addEventListener("mouseover", () => handleNoAttempt("hover"));
+  // Click/tap = attempt
+  noBtn.addEventListener("click", () => handleNoAttempt("click"));
+  noBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    handleNoAttempt("touch");
+  }, { passive: false });
 
   // 3) YES runs away ONCE
   let yesDodgedOnce = false;
@@ -298,7 +367,6 @@
 
     teaseLine.textContent = "Relax… I just wanted to see if you were sure 😌";
 
-    // Move YES away temporarily (safe-ish)
     yesBtn.style.transform = "translate(-90px, -12px) rotate(-2deg)";
     setTimeout(() => {
       yesBtn.style.transform = "none";
@@ -307,12 +375,10 @@
     return true;
   }
 
-  // We'll trigger dodge on the first click attempt.
   yesBtn.addEventListener("click", () => {
     const dodged = dodgeYesOnce();
-    if (dodged) return; // stop here on first click
+    if (dodged) return;
 
-    // Second click -> show terms
     termsOverlay.style.display = "flex";
   });
 
@@ -333,17 +399,14 @@
       }
     };
 
-    // Try play immediately in this click gesture
     const p = music.play();
 
-    // Seek after metadata/playing to ensure it sticks
     music.addEventListener("loadedmetadata", seek, { once:true });
     music.addEventListener("playing", seek, { once:true });
 
     if (p && typeof p.catch === "function") {
       p.catch((e) => {
         console.log("Play blocked:", e);
-        // On some browsers, user may need one more click.
         alert("Sound blocked. Tap the button once more 😅");
       });
     }
@@ -389,6 +452,3 @@
 
 </body>
 </html>
-
-
-
